@@ -4,22 +4,26 @@ var app = {
   server: 'https://api.parse.com/1/classes/chatterbox',
 
   init: function() {
+    app.friends = []; //only runs once vs a property on app directly
     this.fetch();
-    window.setInterval(app.fetch, 6000);
+    window.setInterval(app.fetch, 10000);
     $(document).ready(function(){
        $("#main").on("click", ".username", function(){
          var $newFriend = $(this).find(".username").context.innerHTML;
-         console.log($(this).find(".username"), "whole object");
-         console.log($newFriend, "newFriend");
-         app.addFriend();
+         app.addFriend($newFriend);
        });
 
        $("#send").submit(function(event){
          var $pushMessage = $(this).find("#message").val();
          console.log($pushMessage);
-         app.handleSubmit($pushMessage);
+         var $room = $(this).find("#roomname").val();
+         console.log($room);
+         app.handleSubmit($pushMessage, $room);
          event.stopImmediatePropagation(); //lookup
        });
+       //submit handler for adding a new room-  using a common one
+       //take values from text field and dropdown list? Try one at a time
+       //var $pushRoom = $(this).find("#roomname").val();
     });
   },
 
@@ -63,26 +67,39 @@ var app = {
   },
 
   addMessage: function(message) {
-     var $post = $('<div class = "post"> </div>');
-     var $username = $('<div class = "username"> </div>').text(message.username);
-     var $text = $('<div class = "text"> </div>').text(message.text);
-     $post.append($username,$text);
-     $('#chats').append($post);
+
+      //Add after the basic structure, if true just addClass to $text
+    var $post = $('<div class = "post"> </div>');
+    var $username = $('<div class = "username"> </div>').text(message.username);
+    var $text = $('<div class = "text"> </div>').text(message.text);
+    var $room = $('<div class = "roomname"></div>').text(message.roomname); //filter on roomname
+    app.addRoom(message.roomname);
+
+    $post.append($username,$text, $room);
+      if (app.friends.indexOf(message.username) >= 0) {
+      $text.addClass("friend");
+      $('#chats').append($post);
+    } else {
+      $('#chats').append($post);
+    }
   },
 
   addRoom: function(room) {
     $('#roomSelect').append('<option>' + room + '</option>');
+    //this should take the value from submit form(handler) and add the room
+    //just like add message
+  },
+  // friends: [],
+  addFriend: function(friend) {
+    app.friends.push(friend);
+    console.log(app.friends);
   },
 
-  addFriend: function() {
-    // add class 'friend' to the selected username (clicked)
-    // add bold to friend css
-  },
-
-  handleSubmit: function(message) {
+  handleSubmit: function(message,room) {
     var msg = {};
     msg.username = window.location.search.split("=")[1];
     msg.text = message;
+    msg.roomname = room;
     app.send(msg);
   }
 }
@@ -92,8 +109,15 @@ app.init();
 /* console.log(data) returns -->
     {
        results: [
-          { username: 'John Doe', text: 'Hello!' },
-          { username: 'Jenny Doe', text: 'Greetings!' }
+          { username: 'John Doe', text: 'Hello!', roomname: 'blah' },
+          { username: 'Jenny Doe', text: 'Greetings!', roomname: 'blah blah' }
        ]
     }
 */
+
+// one option: create rooms as objects, and add to DOM only the unique ones
+/*$("#roomSelect option").each(function() {
+      if($.inArray(message.roomname) === -1){
+        app.addRoom(message.roomname);
+      } */
+
