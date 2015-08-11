@@ -7,6 +7,7 @@ var app = {
 
     $(document).ready(function(){
       console.log("Hi!");
+      app.fetch();
     });
   },
 
@@ -19,6 +20,7 @@ var app = {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function(data) {
+        //app.addMessage(message);
         var msg = message.username + ': ' + message.text; // do we need to handle this in success at all?
         console.log(msg);
         console.log('chatterbox: Message sent');
@@ -34,13 +36,28 @@ var app = {
 // for loop to grab messages from the server
   fetch: function(message) {
     $.ajax({
+      url: 'https://api.parse.com/1/classes/chatterbox',
       type: 'GET',
       data: JSON.stringify(message), //?
       contentType: 'application/json',
       success: function(data) { //which is the array/stack of messages?
-        // for(var i=0; i<.length; i++){
-        //     // iterate through all msgs and use addMessage()
-        // }
+        console.log(data)
+        /*
+            {
+               results: [
+                  {
+                     text: 'Hello!',
+                     username: "John Doe"
+                  },
+                  {}
+
+               ]
+            }
+
+        */
+        for(var i=0; i< data.results.length; i++){
+            app.addMessage(data.results[i]);
+        }
         console.log('chatterbox: Message recieved');
       },
       error: function(data) {
@@ -59,7 +76,7 @@ var app = {
   addMessage: function(message) {
      console.log(typeof message);
      console.log(message);
-     $('#chats').append('<div class="posts">' + message.username + " : " + message + "</div>").show();
+     $('#chats').append('<div class="username">' + message.username + "</div>"+'<div class="text">' + message.text + "</div>");
 //$('#chats').append('<div class="posts">' + message + "</div>");
   },
 
@@ -67,7 +84,9 @@ var app = {
     $('#roomSelect').append('<option>' + room + '</option>');
   }
 
+  // addFriend: function() {
 
+  // }
 }
 
 
@@ -76,3 +95,4 @@ var app = {
 //   var test = $('.userInput').val();
 //   // app.addMessage(test);  // we need to connect it to some ajax method
 // });
+app.init();
