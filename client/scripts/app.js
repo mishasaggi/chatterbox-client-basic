@@ -18,12 +18,23 @@ var app = {
          console.log($pushMessage);
          var $room = $(this).find("#roomname").val();
          console.log($room);
-         app.handleSubmit($pushMessage, $room);
+         var $newUser = $(this).find("#addUser").val();
+         app.handleSubmit($pushMessage, $room, $newUser);
          event.stopImmediatePropagation(); //lookup
        });
        //submit handler for adding a new room-  using a common one
        //take values from text field and dropdown list? Try one at a time
        //var $pushRoom = $(this).find("#roomname").val();
+       $("#roomSelect").on('change', function(){
+          var currentRoom = $(this).val();
+          console.log(currentRoom);
+          //get the val hide everything else, show all messages (divs) for the val
+          //alternative use Adam's .not selector
+          console.log($("#chats > div").find('.'+currentRoom));
+          $("#chats > div").not('.'+currentRoom).hide();
+
+
+       })
     });
   },
 
@@ -72,7 +83,10 @@ var app = {
     var $post = $('<div class = "post"> </div>');
     var $username = $('<div class = "username"> </div>').text(message.username);
     var $text = $('<div class = "text"> </div>').text(message.text);
-    var $room = $('<div class = "roomname"></div>').text(message.roomname); //filter on roomname
+    var $room = $('<div class = "roomname"></div>').text(message.roomname);
+    //filter on roomname
+    var newClass = message.roomname;
+    $room.addClass(newClass);
     app.addRoom(message.roomname);
 
     $post.append($username,$text, $room);
@@ -95,12 +109,17 @@ var app = {
     console.log(app.friends);
   },
 
-  handleSubmit: function(message,room) {
+  handleSubmit: function(message,room, user) {
+    var sanitize = function(string){
+      return string ? string.replace(/</g, '&lt').replace(/>/g, '&gt') : undefined ; //does &lt work differently than < ?
+    }
     var msg = {};
-    msg.username = window.location.search.split("=")[1];
-    msg.text = message;
-    msg.roomname = room;
+    msg.username = sanitize(user) || window.location.search.split("=")[1];
+    msg.text = sanitize(message);
+    msg.roomname = sanitize(room);
+
     app.send(msg);
+
   }
 }
 
